@@ -22,20 +22,29 @@ use App\Core\Router;
 use App\Core\Session;
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
+use App\Controllers\PostController;
 
 Session::start();
 
 $router = new Router();
 $auth = new AuthController();
 $dash = new DashboardController();
+$post = new PostController();
 
+// ---- Auth Routes ----
 $router->get('/', fn() => $auth->showLogin());
 $router->get('/login', fn() => $auth->showLogin());
 $router->get('/register', fn() => $auth->showRegister());
-$router->get('/dashboard', fn() => $dash->index());
-
-$router->post('/register', fn() => $auth->register());
 $router->post('/login', fn() => $auth->login());
+$router->post('/register', fn() => $auth->register());
 $router->get('/logout', fn() => $auth->logout());
 
+// ---- Dashboard ----
+$router->get('/dashboard', fn() => $dash->index());
+
+// ---- Post Routes ----
+$router->get('/post/create', fn() => $post->create());  // shows create_post.php
+$router->post('/post/create', fn() => $post->create()); // handles form submission
+
+// ---- Dispatch ----
 $router->dispatch($_SERVER['REQUEST_URI'] ?? '/', $_SERVER['REQUEST_METHOD'] ?? 'GET');
