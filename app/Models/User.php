@@ -3,8 +3,10 @@ namespace App\Models;
 
 use PDO;
 
-class User {
-    private static function connect(): PDO {
+class User
+{
+    private static function connect(): PDO
+    {
         $host = getenv('DB_HOST') ?: '127.0.0.1';
         $db = getenv('DB_NAME') ?: 'authboard';
         $user = getenv('DB_USER') ?: 'root';
@@ -28,5 +30,10 @@ class User {
         $stmt = self::connect()->prepare('INSERT INTO users (name, email, password) VALUES (?, ?, ?)');
         $stmt->execute([$name, $email, $password]);
         return (int)self::connect()->lastInsertId();
+    }
+
+    public static function updateProfile(int $id, ?string $avatar = null, ?string $bio = null): bool {
+        $stmt = self::connect()->prepare('UPDATE users SET avatar = COALESCE(?, avatar), bio = COALESCE(?, bio) WHERE id = ?');
+        return $stmt->execute([$avatar, $bio, $id]);
     }
 }

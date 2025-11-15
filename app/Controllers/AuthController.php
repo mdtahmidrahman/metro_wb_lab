@@ -22,11 +22,13 @@ class AuthController extends Controller {
         $password = $_POST['password'] ?? '';
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            echo "Invalid email address.";
+            $error = "Invalid email address.";
+            $this->view('auth/register.php', ['error' => $error]);
             return;
         }
         if (strlen($password) < 6) {
-            echo "Password must be at least 6 characters.";
+            $error = "Password must be at least 6 characters.";
+            $this->view('auth/register.php', ['error' => $error]);
             return;
         }
 
@@ -37,6 +39,7 @@ class AuthController extends Controller {
         Mailer::send($email, 'Welcome to AuthBoard', "Hello $name,\n\nThanks for registering at AuthBoard.");
 
         header('Location: /login');
+        exit;
     }
 
     public function login() {
@@ -44,17 +47,29 @@ class AuthController extends Controller {
         $password = $_POST['password'] ?? '';
 
         $user = User::findByEmail($email);
-        if ($user && password_verify($password, $user['password'])) {
-            Session::set('user', ['id' => $user['id'], 'name' => $user['name'], 'email' => $user['email']]);
+        if ($user && password_verify($password, $user['password']))
+        {
+            $sessionUser = [
+                'id' => $user['id'],
+                'name' => $user['name'],
+                'email' => $user['email'],
+                'avatar' => $user['avatar'] ?? null,
+                'bio' => $user['bio'] ?? null,
+            ];
+
+            Session::set('user', $sessionUser);
             header('Location: /dashboard');
-            return;
+            exit;
         }
 
-        echo 'Invalid credentials.';
+        // Show error message
+        $error = 'Invalid credentials.';
+        $this->view('auth/login.php', ['error' => $error]);
     }
 
     public function logout() {
         Session::destroy();
         header('Location: /login');
+        exit;
     }
 }
